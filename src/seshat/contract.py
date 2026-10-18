@@ -8,8 +8,8 @@ class DetectorEvent(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True) #Se vir com um campo extra, nao aceita; Tipo errado: recusa e nao converte
 
     type: Literal["detector"]
-    device_id: str = Field(min_lenght=1, max_length=64,  pattern=r"^[A-Za-z0-9_-]+$") ##  1-64 chars: letters, digits, _ and -
-    ts: int = Field(gt=0) 
+    device_id: str = Field(min_length=1, max_length=64,  pattern=r"^[A-Za-z0-9_-]+$") ##  1-64 chars: letters, digits, _ and -
+    ts: int = Field(gt=0)
     kind: Literal["gamma", "neutron"]
     counts: int = Field(ge=0)
     interval_s: float = Field(gt=0)
