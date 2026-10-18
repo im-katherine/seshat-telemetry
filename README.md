@@ -15,14 +15,14 @@ thresholds.
 
 ## Motivation
 
-I did an undergraduate research project (IC) on neutron diffraction, where I used
-McStas to simulate instruments and work with detector data. That left me interested in
+I did a six-month undergraduate research project (IC) at IPEN on neutron diffraction,
+studying the theory and simulating instruments with McStas. That left me interested in
 how radiation measurements are produced and what it takes to trust them.
 
 Seshat combines that background with the software skills I was building at the same
 time: data pipelines, APIs, statistical analysis and containerized deployment. It treats
-
-radiation monitoring as a telemetry problem where the physics decides how the software should behave.
+radiation monitoring as a telemetry problem where the physics decides how the software
+should behave.
 
 It is simulation-first, so the whole pipeline can be developed and tested without hardware.
 
@@ -35,6 +35,9 @@ Simulator ──► Ingestion ──► SQLite ◄── Analysis
                            FastAPI ──► Dashboard
 ```
 
+The event contract and the simulator are implemented; the remaining stages are on the
+[roadmap](#roadmap).
+
 Every source emits the same event format, so the simulator can later be replaced by real
 data (for example McStas output or an acquisition node) without touching the rest.
 
@@ -42,9 +45,13 @@ data (for example McStas output or an acquisition node) without touching the res
 {"type": "detector", "device_id": "det-01", "ts": 1729100000, "kind": "gamma", "counts": 47, "interval_s": 10}
 ```
 
-Invalid events are rejected at the boundary and logged.
+Events are validated against a strict contract: unknown fields, wrong types and
+out-of-range values are rejected.
 
 ## The physics behind the analysis
+
+The simulator already models these effects. The analysis that exploits them is on the
+roadmap.
 
 | Phenomenon | Handling |
 |---|---|
@@ -59,27 +66,36 @@ intervals per day, a fixed σ threshold implies a predictable number of false al
 
 ## Tech stack
 
-Python · FastAPI · Pydantic · SQLite · pandas · Streamlit · pytest · Docker
+**In use:** Python · Pydantic · NumPy · pytest · ruff
+
+**Planned:** FastAPI · SQLite · pandas · Streamlit · Docker
 
 ## Getting started
 
 Requires Python 3.11 or newer.
 
 ```bash
-git clone https://github.com/im-katherine/seshat.git
-cd seshat
+git clone https://github.com/im-katherine/seshat-telemetry.git
+cd seshat-telemetry
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pytest
 ```
 
+Print a simulated stream of detector events (four detectors, one moving source, one
+detector that freezes partway through):
+
+```bash
+PYTHONPATH=src python -m seshat.sources.simulator | head
+```
+
 ## Roadmap
 
 **Phase 1: detector network**
 - [x] Project setup and test harness
-- [ ] Event contract with validation
-- [ ] Detector simulator (background, source passage, dead time, faults)
+- [x] Event contract with validation
+- [x] Detector simulator (background, source passage, dead time, faults)
 - [ ] Storage and ingestion
 - [ ] REST API
 - [ ] Statistical anomaly detection
